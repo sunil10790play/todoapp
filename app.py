@@ -43,10 +43,30 @@ def create_todo():
         return jsonify(body)
 
 
+@app.route('/todos/<todo_id>/set-completed', methods=['POST'])
+def update_set_completed(todo_id):
+    error = False
+    try: 
+        completed = request.get_json()['completed']
+        todo = Todo.query.get(todo_id)
+        todo.completed = completed
+        db.session.commit()
+    except:
+        error: True
+        db.session.rollback()
+        print(sys.exc_info())
+    finally:
+        db.session.close()
+    if error:
+        abort(500)
+    else:
+        return redirect(url_for('index'))
+
+
 
 @app.route('/')
 def index():
-    return render_template('index.html', data=Todo.query.all())
+    return render_template('index.html', data=Todo.query.order_by('id').all())
 
 #always include this at the bottom of your code
 if __name__ == '__main__':
